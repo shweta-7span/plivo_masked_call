@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity implements BackendListener {
 
-    private String TAG = getClass().getName();
+    final private String TAG = getClass().getName();
     private ActionBar actionBar;
     private Timer callTimer;
     private int tick;
@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements BackendListener {
             return;
         }
 
-        showOutCallUI(STATE.IDLE,null, phoneNumber);
+        showOutCallUI(CallState.IDLE,null, phoneNumber);
     }
 
     private void makeCall(String phoneNum) {
@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity implements BackendListener {
 
     public void onClickBtnSpeaker(View view) {
         AudioManager audioManager =(AudioManager)getSystemService(Context.AUDIO_SERVICE);
-        ImageButton btn = (ImageButton) findViewById(R.id.speaker);
+        ImageButton btn = findViewById(R.id.speaker);
         if(isSpeakerOn) {
             isSpeakerOn=false;
             btn.setImageResource(R.drawable.speaker);
@@ -129,7 +129,7 @@ public class MainActivity extends AppCompatActivity implements BackendListener {
     }
 
     public void onClickBtnHold(View view) {
-        ImageButton btn = (ImageButton) findViewById(R.id.hold);
+        ImageButton btn = findViewById(R.id.hold);
         if(isHoldOn) {
             isHoldOn=false;
             btn.setImageResource(R.drawable.hold);
@@ -163,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements BackendListener {
     }
 
     public void onClickBtnMute(View view) {
-        ImageButton btn = (ImageButton) findViewById(R.id.mute);
+        ImageButton btn = findViewById(R.id.mute);
         if(isMuteOn) {
             isMuteOn=false;
             btn.setImageResource(R.drawable.mute);
@@ -224,16 +224,16 @@ public class MainActivity extends AppCompatActivity implements BackendListener {
     /**
      * Display & Handle Outgoing Calls
      *
-     * @param state
+     * @param callState
      * @param phoneNumber
      */
-    private void showOutCallUI(STATE state, Outgoing outgoing, String phoneNumber) {
+    private void showOutCallUI(CallState callState, Outgoing outgoing, String phoneNumber) {
         callData = outgoing;
 
-        String title = state.name();
+        String title = callState.name();
         TextView callerState;
 
-        switch (state) {
+        switch (callState) {
             case IDLE:
                 setContentView(R.layout.call);
                 actionBar.hide();
@@ -274,7 +274,7 @@ public class MainActivity extends AppCompatActivity implements BackendListener {
                     int minutes = (int) TimeUnit.SECONDS.toMinutes(tick -= TimeUnit.HOURS.toSeconds(hours));
                     int seconds = (int) (tick - TimeUnit.MINUTES.toSeconds(minutes));
                     String text = hours > 0 ? String.format(HH_MM_SS, hours, minutes, seconds) : String.format(MM_SS, minutes, seconds);
-                    TextView timerTextView = (TextView) findViewById(R.id.caller_state);
+                    TextView timerTextView = findViewById(R.id.caller_state);
                     if (timerTextView != null) {
                         timerTextView.setVisibility(View.VISIBLE);
                         timerTextView.setText(text);
@@ -318,12 +318,12 @@ public class MainActivity extends AppCompatActivity implements BackendListener {
     }
 
     @Override
-    public void onIncomingCall(Incoming data, STATE callState) {
+    public void onIncomingCall(Incoming data, CallState callState) {
 
     }
 
     @Override
-    public void onOutgoingCall(Outgoing data, STATE callState) {
+    public void onOutgoingCall(Outgoing data, CallState callState) {
         Log.d(TAG, "onOutgoingCall Done: " + callState);
         runOnUiThread(() -> showOutCallUI(callState, data,null));
     }

@@ -1,7 +1,6 @@
 package com.example.demoplivo;
 
 import android.util.Log;
-import android.widget.Toast;
 
 import com.plivo.endpoint.Endpoint;
 import com.plivo.endpoint.EventListener;
@@ -12,7 +11,7 @@ import java.util.HashMap;
 
 public class PlivoBackEnd implements EventListener {
 
-    private String TAG = getClass().getName();
+    final private String TAG = getClass().getName();
 
     private Endpoint endpoint;
 
@@ -95,37 +94,37 @@ public class PlivoBackEnd implements EventListener {
     @Override
     public void onOutgoingCall(Outgoing outgoing) {
         Log.d(TAG, Constants.OUTGOING_CALL);
-        if (listener != null) listener.onOutgoingCall(outgoing, STATE.PROGRESS);
+        if (listener != null) listener.onOutgoingCall(outgoing, CallState.PROGRESS);
     }
 
     @Override
     public void onOutgoingCallRinging(Outgoing outgoing) {
         Log.d(TAG, Constants.OUTGOING_CALL_RINGING);
-        if (listener != null) listener.onOutgoingCall(outgoing, STATE.RINGING);
+        if (listener != null) listener.onOutgoingCall(outgoing, CallState.RINGING);
     }
 
     @Override
     public void onOutgoingCallAnswered(Outgoing outgoing) {
         Log.d(TAG, Constants.OUTGOING_CALL_ANSWERED);
-        if (listener != null) listener.onOutgoingCall(outgoing, STATE.ANSWERED);
+        if (listener != null) listener.onOutgoingCall(outgoing, CallState.ANSWERED);
     }
 
     @Override
     public void onOutgoingCallRejected(Outgoing outgoing) {
         Log.d(TAG, Constants.OUTGOING_CALL_REJECTED);
-        if (listener != null) listener.onOutgoingCall(outgoing, STATE.REJECTED);
+        if (listener != null) listener.onOutgoingCall(outgoing, CallState.REJECTED);
     }
 
     @Override
     public void onOutgoingCallHangup(Outgoing outgoing) {
         Log.d(TAG, Constants.OUTGOING_CALL_HANGUP);
-        if (listener != null) listener.onOutgoingCall(outgoing, STATE.HANGUP);
+        if (listener != null) listener.onOutgoingCall(outgoing, CallState.HANGUP);
     }
 
     @Override
     public void onOutgoingCallInvalid(Outgoing outgoing) {
         Log.d(TAG, Constants.OUTGOING_CALL_INVALID);
-        if (listener != null) listener.onOutgoingCall(outgoing, STATE.INVALID);
+        if (listener != null) listener.onOutgoingCall(outgoing, CallState.INVALID);
     }
 
     @Override

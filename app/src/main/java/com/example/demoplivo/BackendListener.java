@@ -5,13 +5,11 @@ import com.plivo.endpoint.Outgoing;
 
 import java.util.HashMap;
 
-enum STATE { IDLE, PROGRESS, RINGING, ANSWERED, HANGUP, REJECTED, INVALID }
-
 public interface BackendListener {
     void onLogin(boolean success);
     void onLogout();
-    void onIncomingCall(Incoming data, STATE callState);
-    void onOutgoingCall(Outgoing data, STATE callState);
+    void onIncomingCall(Incoming data, CallState callState);
+    void onOutgoingCall(Outgoing data, CallState callState);
     void onIncomingDigit(String digit);
     void mediaMetrics(HashMap messageTemplate);
 }
