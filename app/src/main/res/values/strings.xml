@@ -2,4 +2,7 @@
     <string name="app_name">DemoPlivo</string>
     <string name="login_success">Login Successfully Done</string>
     <string name="call_hint">sip uri or phone number</string>
+    <string name="app_is_running">Plivo Call is running</string>
+    <string name="call_is_running">Call is running</string>
+    <string name="checking_selected_apps">Checking for selected apps</string>
 </resources>

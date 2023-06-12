@@ -15,28 +15,31 @@ public class PlivoBackEnd implements EventListener {
 
     private Endpoint endpoint;
 
-    private BackendListener listener;
+    private CallListener callListener;
+    private LoginListener loginListener;
 
     static PlivoBackEnd newInstance() {
         return new PlivoBackEnd();
     }
 
-    public static HashMap<String, Object> options = new HashMap<String, Object>()
-    {
+    public static HashMap<String, Object> options = new HashMap<String, Object>() {
         {
-            put("debug",true);
-            put("enableTracking",true);
+            put("debug", true);
+            put("enableTracking", true);
             put("maxAverageBitrate", 21000);
         }
     };
 
     public void init(boolean log) {
-
         endpoint = Endpoint.newInstance(true, this, options);
     }
 
-    public void setListener(BackendListener listener) {
-        this.listener = listener;
+    public void setLoginListener(LoginListener loginListener) {
+        this.loginListener = loginListener;
+    }
+
+    public void setBackendListener(CallListener callListener) {
+        this.callListener = callListener;
     }
 
     public Outgoing getOutgoing() {
@@ -52,7 +55,7 @@ public class PlivoBackEnd implements EventListener {
     @Override
     public void onLogin() {
         Log.d(TAG, Constants.LOGIN_SUCCESS);
-        if (listener != null) listener.onLogin(true);
+        if (loginListener != null) loginListener.onLogin(true);
     }
 
     @Override
@@ -63,7 +66,7 @@ public class PlivoBackEnd implements EventListener {
     @Override
     public void onLoginFailed() {
         Log.d(TAG, Constants.LOGIN_FAILED);
-        if (listener != null) listener.onLogin(false);
+        if (loginListener != null) loginListener.onLogin(false);
     }
 
     @Override
@@ -94,37 +97,37 @@ public class PlivoBackEnd implements EventListener {
     @Override
     public void onOutgoingCall(Outgoing outgoing) {
         Log.d(TAG, Constants.OUTGOING_CALL);
-        if (listener != null) listener.onOutgoingCall(outgoing, CallState.PROGRESS);
+        if (callListener != null) callListener.onOutgoingCall(outgoing, CallState.PROGRESS);
     }
 
     @Override
     public void onOutgoingCallRinging(Outgoing outgoing) {
         Log.d(TAG, Constants.OUTGOING_CALL_RINGING);
-        if (listener != null) listener.onOutgoingCall(outgoing, CallState.RINGING);
+        if (callListener != null) callListener.onOutgoingCall(outgoing, CallState.RINGING);
     }
 
     @Override
     public void onOutgoingCallAnswered(Outgoing outgoing) {
         Log.d(TAG, Constants.OUTGOING_CALL_ANSWERED);
-        if (listener != null) listener.onOutgoingCall(outgoing, CallState.ANSWERED);
+        if (callListener != null) callListener.onOutgoingCall(outgoing, CallState.ANSWERED);
     }
 
     @Override
     public void onOutgoingCallRejected(Outgoing outgoing) {
         Log.d(TAG, Constants.OUTGOING_CALL_REJECTED);
-        if (listener != null) listener.onOutgoingCall(outgoing, CallState.REJECTED);
+        if (callListener != null) callListener.onOutgoingCall(outgoing, CallState.REJECTED);
     }
 
     @Override
     public void onOutgoingCallHangup(Outgoing outgoing) {
         Log.d(TAG, Constants.OUTGOING_CALL_HANGUP);
-        if (listener != null) listener.onOutgoingCall(outgoing, CallState.HANGUP);
+        if (callListener != null) callListener.onOutgoingCall(outgoing, CallState.HANGUP);
     }
 
     @Override
     public void onOutgoingCallInvalid(Outgoing outgoing) {
         Log.d(TAG, Constants.OUTGOING_CALL_INVALID);
-        if (listener != null) listener.onOutgoingCall(outgoing, CallState.INVALID);
+        if (callListener != null) callListener.onOutgoingCall(outgoing, CallState.INVALID);
     }
 
     @Override

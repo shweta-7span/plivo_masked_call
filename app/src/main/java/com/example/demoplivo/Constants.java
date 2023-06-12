@@ -1,5 +1,7 @@
 package com.example.demoplivo;
 
+import com.plivo.endpoint.BuildConfig;
+
 public class Constants {
     public static final String LOGIN_SUCCESS = "onLogin success";
     public static final String LOGOUT_SUCCESS = "onLogout success";
@@ -15,5 +17,10 @@ public class Constants {
 
     //REQUEST_CODE
     public static final int RECORD_AUDIO_PERMISSION_REQUEST_CODE = 101;
+
+    public static final String APP_PACKAGE_NAME = BuildConfig.APPLICATION_ID;
+    public static final String NOTIFICATION_CHANNEL_ID = APP_PACKAGE_NAME;
+
+
 
 }

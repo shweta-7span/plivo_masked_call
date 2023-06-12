@@ -10,8 +10,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -27,12 +31,11 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.plivo.endpoint.Incoming;
 import com.plivo.endpoint.Outgoing;
 
-import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
-public class MainActivity extends AppCompatActivity implements BackendListener {
+public class MainActivity extends AppCompatActivity implements LoginListener {
 
     final private String TAG = getClass().getName();
     private ActionBar actionBar;
@@ -41,7 +44,11 @@ public class MainActivity extends AppCompatActivity implements BackendListener {
 
     private Object callData;
 
-    private boolean isSpeakerOn=false, isHoldOn=false, isMuteOn=false;
+    private boolean isSpeakerOn = false, isHoldOn = false, isMuteOn = false;
+
+    ImageButton callButton;
+
+    CallStateChangeListener callStateChangeListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements BackendListener {
         setTitle("Plivo Calling");
         actionBar = getSupportActionBar();
 
+//        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(mMessageReceiver, new IntentFilter("currentCall"));
         FirebaseApp.initializeApp(getApplicationContext());
 
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
@@ -57,6 +65,20 @@ public class MainActivity extends AppCompatActivity implements BackendListener {
         } else {
             ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.RECORD_AUDIO}, RECORD_AUDIO_PERMISSION_REQUEST_CODE);
         }
+
+        callButton = findViewById(R.id.call_btn);
+        callButton.setOnClickListener(v -> {
+            onClickBtnMakeCall();
+        });
+
+        callStateChangeListener = new CallStateChangeListener() {
+            @Override
+            public void onCallStateChanged(CallState callState, Outgoing data) {
+                Log.d(TAG, "onCallStatusChanged: " + callState);
+                runOnUiThread(() -> showOutCallUI(callState, data,null));
+            }
+        };
+
     }
 
     @Override
@@ -75,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements BackendListener {
     }
 
     private void registerBackendListener() {
-        ((App) getApplication()).backend().setListener(this);
+        ((App) getApplication()).backend().setLoginListener(this);
     }
 
     private void loginWithToken() {
@@ -92,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements BackendListener {
         ((AppCompatTextView) findViewById(R.id.logged_in_as)).setText(Utils.USERNAME);
     }
 
-    public void onClickBtnMakeCall(View view) {
+    public void onClickBtnMakeCall() {
         EditText phoneNumberText = findViewById(R.id.call_text);
         String phoneNumber = phoneNumberText.getText().toString();
         if (phoneNumber.matches("")) {
@@ -100,7 +122,13 @@ public class MainActivity extends AppCompatActivity implements BackendListener {
             return;
         }
 
-        showOutCallUI(CallState.IDLE,null, phoneNumber);
+//        Intent intent= new Intent(getApplicationContext(), CallForegroundService.class);
+//        intent.putExtra("listener", callStateChangeListener);
+//        startService(intent);
+
+//        CallForegroundService.instance.setCallStatusListener(this);
+
+        showOutCallUI(CallState.IDLE, null, phoneNumber);
     }
 
     private void makeCall(String phoneNum) {
@@ -111,16 +139,15 @@ public class MainActivity extends AppCompatActivity implements BackendListener {
     }
 
     public void onClickBtnSpeaker(View view) {
-        AudioManager audioManager =(AudioManager)getSystemService(Context.AUDIO_SERVICE);
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         ImageButton btn = findViewById(R.id.speaker);
-        if(isSpeakerOn) {
-            isSpeakerOn=false;
+        if (isSpeakerOn) {
+            isSpeakerOn = false;
             btn.setImageResource(R.drawable.speaker);
             audioManager.setMode(AudioManager.MODE_IN_CALL);
             audioManager.setMode(AudioManager.MODE_NORMAL);
-        }
-        else {
-            isSpeakerOn=true;
+        } else {
+            isSpeakerOn = true;
             btn.setImageResource(R.drawable.speaker_selected);
             audioManager.setMode(AudioManager.MODE_NORMAL);
             audioManager.setMode(AudioManager.MODE_IN_CALL);
@@ -130,13 +157,12 @@ public class MainActivity extends AppCompatActivity implements BackendListener {
 
     public void onClickBtnHold(View view) {
         ImageButton btn = findViewById(R.id.hold);
-        if(isHoldOn) {
-            isHoldOn=false;
+        if (isHoldOn) {
+            isHoldOn = false;
             btn.setImageResource(R.drawable.hold);
             unHoldCall();
-        }
-        else {
-            isHoldOn=true;
+        } else {
+            isHoldOn = true;
             btn.setImageResource(R.drawable.hold_selected);
             holdCall();
         }
@@ -164,13 +190,12 @@ public class MainActivity extends AppCompatActivity implements BackendListener {
 
     public void onClickBtnMute(View view) {
         ImageButton btn = findViewById(R.id.mute);
-        if(isMuteOn) {
-            isMuteOn=false;
+        if (isMuteOn) {
+            isMuteOn = false;
             btn.setImageResource(R.drawable.mute);
             unMuteCall();
-        }
-        else {
-            isMuteOn=true;
+        } else {
+            isMuteOn = true;
             btn.setImageResource(R.drawable.mute_selected);
             muteCall();
         }
@@ -197,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements BackendListener {
     }
 
     public void onClickBtnEndCall(View view) {
-        AudioManager audioManager =(AudioManager)getSystemService(Context.AUDIO_SERVICE);
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         cancelTimer();
         endCall();
         isSpeakerOn = false;
@@ -216,7 +241,7 @@ public class MainActivity extends AppCompatActivity implements BackendListener {
             } else {
                 ((Incoming) callData).hangup();
             }
-        }else{
+        } else {
             Log.e(TAG, "callData is NULL");
         }
     }
@@ -303,6 +328,7 @@ public class MainActivity extends AppCompatActivity implements BackendListener {
 
     @Override
     public void onLogin(boolean success) {
+        Log.i(TAG, "onLogin: ");
         runOnUiThread(() -> {
             if (success) {
                 showUserName();
@@ -317,7 +343,29 @@ public class MainActivity extends AppCompatActivity implements BackendListener {
 
     }
 
-    @Override
+    /*private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Get extra data included in the Intent
+
+            CallState callState = null;
+
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                callState = intent.getParcelableExtra("callState", CallState.class);
+            }
+
+            CallState finalCallState = callState;
+            runOnUiThread(() -> showOutCallUI(finalCallState, null, null));
+        }
+    };*/
+
+    /*@Override
+    public void onCallStateChanged(CallState callState, Outgoing data) {
+        Log.d(TAG, "onCallStatusChanged: " + callState);
+        runOnUiThread(() -> showOutCallUI(callState, data,null));
+    }*/
+
+    /*@Override
     public void onIncomingCall(Incoming data, CallState callState) {
 
     }
@@ -336,5 +384,5 @@ public class MainActivity extends AppCompatActivity implements BackendListener {
     @Override
     public void mediaMetrics(HashMap messageTemplate) {
 
-    }
+    }*/
 }
